@@ -16,7 +16,7 @@ jobs:
       - name: Create ZIP archive
         run: |
           cd xpsound
-          zip -r ../XPSound-${{ github.ref_name }}.zip .
+          zip -r ../XPSound-${{ github.ref_name }}.zip xpsound/
           cd ..
       
       - name: Create Release
