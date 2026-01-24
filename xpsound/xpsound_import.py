@@ -66,7 +66,7 @@ def import_snd_file(context, filepath, group_by_position, import_spaces, import_
                 current_type = None
                 
         if line.startswith('BEGIN_SOUND_ATTACHMENT'):
-            # Look ahead for SNAPSHOT_NAME/EVENT_NAME, VEH_XYZ, and rotation
+            # Look ahead for SNAPSHOT_NAME/EVENT_NAME (FMOD events), VEH_XYZ, and rotation
             j = i + 1
             current_type = 'SOUND'
             current_position = None
@@ -166,7 +166,7 @@ def process_sound_line(obj, parts):
         sound = obj.xp_sound_data.xp_sound_list[-1]
         sound.event_auto_end_from_start_cond = True
     elif parts[0] in ['EVENT_START_COND', 'EVENT_END_COND', 'EVENT_ALWAYS']:
-        add_sound_event(obj, parts)
+        add_sound_condition(obj, parts)
 
 def process_space_line(obj, parts):
     if parts[0] == 'SOUND_INDEX':
@@ -191,7 +191,7 @@ def process_snapshot_line(obj, parts):
         snapshot = obj.xp_sound_data.xp_snapshot_list[-1]
         snapshot.event_auto_end_from_start_cond = True        
     elif parts[0] in ['EVENT_START_COND', 'EVENT_END_COND', 'EVENT_ALWAYS']:
-        add_snapshot_event(obj, parts)
+        add_snapshot_condition(obj, parts)
 
 def set_aabb(obj, parts):
     obj.empty_display_type = 'CUBE'
@@ -207,7 +207,7 @@ def set_sphere(obj, parts):
     radius = float(parts[4])
     obj.scale = Vector((radius, radius, radius))
     
-def add_sound_event(obj, parts):
+def add_sound_condition(obj, parts):
     sound = obj.xp_sound_data.xp_sound_list[-1]
     event = sound.event_list.add()
     event.event_type = parts[0].split('_')[1]
@@ -216,7 +216,7 @@ def add_sound_event(obj, parts):
         event.comparison_operator = parts[2] if len(parts) > 2 else '!='
         event.comparison_value = float(parts[3]) if len(parts) > 3 else 0
 
-def add_snapshot_event(obj, parts):
+def add_snapshot_condition(obj, parts):
     snapshot = obj.xp_sound_data.xp_snapshot_list[-1]
     event = snapshot.event_list.add()
     event.event_type = parts[0].split('_')[1]
@@ -260,7 +260,7 @@ class XPSOUND_import_snd(bpy.types.Operator):
     def execute(self, context):
         import_snd_file(context, self.filepath, self.group_by_position,
                         self.import_spaces, self.import_snapshots, self.import_sounds)
-        self.report({'INFO'}, f"Imported sound events from {self.filepath}")
+        self.report({'INFO'}, f"Imported sound conditions from {self.filepath}")
         return {'FINISHED'}
     
     def invoke(self, context, event):

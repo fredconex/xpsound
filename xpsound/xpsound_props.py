@@ -1,23 +1,23 @@
 import bpy
 
-class XP_SOUND_EventItem(bpy.types.PropertyGroup):
+class XP_SOUND_ConditionItem(bpy.types.PropertyGroup):
     event_type: (
-        bpy.props.EnumProperty(  # Type of the sound event (START, END, ALWAYS, etc.)
-            name="Event Type",
+        bpy.props.EnumProperty(  # Type of the sound condition (START, END, ALWAYS, etc.)
+            name="Condition Type",
             items=[
-                ("START", "Start", "Event start condition"),
-                ("END", "End", "Event end condition"),
-                ("ALWAYS", "Always", "Always play event"),
+                ("START", "Start", "Condition to start the FMOD event"),
+                ("END", "End", "Condition to end the FMOD event"),
+                ("ALWAYS", "Always", "Always play FMOD event"),
                 ("CUE_TRIGGER_COND", "Cue Trigger", "Sets conditions for cue triggering based on dataref"),
-                ("CMND_DOWN", "Command Down", "Event triggered on command press down"),
-                ("CMND_UP", "Command Up", "Event triggered on command release"),
-                ("CMND_HOLD_STOP", "Command Hold Stop", "Event triggered on command press and stopped on release"),
-                ("CMND_HOLD_CUE", "Command Hold Cue", "Event triggered on command press and cued on release"),
+                ("CMND_DOWN", "Command Down", "Condition triggered on command press down"),
+                ("CMND_UP", "Command Up", "Condition triggered on command release"),
+                ("CMND_HOLD_STOP", "Command Hold Stop", "Condition triggered on command press and stopped on release"),
+                ("CMND_HOLD_CUE", "Command Hold Cue", "Condition triggered on command press and cued on release"),
             ],
         )
     )
 
-    # Dataref name for the sound event condition
+    # Dataref name for the sound condition
     dataref_name: bpy.props.StringProperty(name="Dataref Name")  
 
     # Comparison operator for the dataref value
@@ -35,7 +35,7 @@ class XP_SOUND_EventItem(bpy.types.PropertyGroup):
         )
     )
 
-    # Comparison value for the sound event condition
+    # Comparison value for the sound condition
     comparison_value: bpy.props.FloatProperty(name="Comparison Value")  
     
         
@@ -44,11 +44,11 @@ class XP_SNAPSHOT_item(bpy.types.PropertyGroup):
     guid: bpy.props.StringProperty(name="Event GUID", default="")
     name: bpy.props.StringProperty(name="Snapshot Name", default="New Snapshot")
 
-    event_param_idx: bpy.props.IntProperty(name="Event Param Idx", description="Index of the parameter dataref for the sound event")
-    event_auto_end_from_start_cond: bpy.props.BoolProperty(name="Event Auto End from Start Cond", description="Whether the sound event auto ends from start condition")
+    event_param_idx: bpy.props.IntProperty(name="Event Param Idx", description="Index of the parameter dataref for the FMOD event")
+    event_auto_end_from_start_cond: bpy.props.BoolProperty(name="Event Auto End from Start Cond", description="Whether the FMOD event auto ends from start condition")
 
     # List
-    event_list: bpy.props.CollectionProperty(type=XP_SOUND_EventItem)
+    event_list: bpy.props.CollectionProperty(type=XP_SOUND_ConditionItem)
     event_index: bpy.props.IntProperty()    
 
 # Define the PropertyGroup for sound objects
@@ -56,13 +56,13 @@ class XP_SOUND_item(bpy.types.PropertyGroup):
     guid: bpy.props.StringProperty(name="Event GUID", default="")
     name: bpy.props.StringProperty(name="Sound Name", default="New Sound")
 
-    event_param_idx: bpy.props.IntProperty(name="Event Param Idx", description="Index of the parameter dataref for the sound event")
-    event_polyphonic: bpy.props.BoolProperty(name="Event Polyphonic", description="Whether the sound event is polyphonic")
-    event_allowed_for_ai: bpy.props.BoolProperty(name="Event Allowed for AI", description="Whether the sound event is allowed for AI")
-    event_auto_end_from_start_cond: bpy.props.BoolProperty(name="Event Auto End from Start Cond", description="Whether the sound event auto ends from start condition")
+    event_param_idx: bpy.props.IntProperty(name="Event Param Idx", description="Index of the parameter dataref for the FMOD event")
+    event_polyphonic: bpy.props.BoolProperty(name="Event Polyphonic", description="Whether the FMOD event is polyphonic")
+    event_allowed_for_ai: bpy.props.BoolProperty(name="Event Allowed for AI", description="Whether the FMOD event is allowed for AI")
+    event_auto_end_from_start_cond: bpy.props.BoolProperty(name="Event Auto End from Start Cond", description="Whether the FMOD event auto ends from start condition")
 
     # List
-    event_list: bpy.props.CollectionProperty(type=XP_SOUND_EventItem)
+    event_list: bpy.props.CollectionProperty(type=XP_SOUND_ConditionItem)
     event_index: bpy.props.IntProperty()
     
 # Define the PropertyGroup for sound objects
@@ -125,7 +125,7 @@ def add_parsed_snapshot(self, context):
     return event    
 
 def register():
-    bpy.utils.register_class(XP_SOUND_EventItem)
+    bpy.utils.register_class(XP_SOUND_ConditionItem)
     bpy.utils.register_class(XP_SNAPSHOT_item)
     bpy.utils.register_class(XP_SOUND_item)
     bpy.utils.register_class(XP_SOUND_data)
@@ -139,7 +139,7 @@ def register():
 
 def unregister():
     bpy.utils.unregister_class(XP_SNAPSHOT_item)
-    bpy.utils.unregister_class(XP_SOUND_EventItem)
+    bpy.utils.unregister_class(XP_SOUND_ConditionItem)
     bpy.utils.unregister_class(XP_SOUND_item)
     bpy.utils.unregister_class(XP_SOUND_data)
 

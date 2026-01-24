@@ -31,11 +31,11 @@ class XP_SOUND_OT_SOUND_REMOVE(bpy.types.Operator):
         obj.xp_sound_data.xp_sound_index = min(max(0, index - 1), len(xp_sound_list) - 1)
         return {'FINISHED'}
 
-# Operator to add a new sound event
-class XP_SOUND_OT_SOUND_EVENT_ADD(bpy.types.Operator):
-    "Defines an Operator to add a new sound event to the selected object's sound events list."
-    bl_idname = "xpsound.add_sound_event"
-    bl_label = "Add Sound Event"
+# Operator to add a new sound condition
+class XP_SOUND_OT_SOUND_CONDITION_ADD(bpy.types.Operator):
+    "Defines an Operator to add a new sound condition to the selected object's sound conditions list."
+    bl_idname = "xpsound.add_sound_condition"
+    bl_label = "Add Sound Condition"
 
     def execute(self, context):
         obj = context.active_object
@@ -45,18 +45,23 @@ class XP_SOUND_OT_SOUND_EVENT_ADD(bpy.types.Operator):
             xp_sound.event_index = len(xp_sound.event_list) - 1
         return {"FINISHED"}        
 
-# Operator to remove the selected sound event from the list
-class XP_SOUND_OT_SOUND_EVENT_REMOVE(bpy.types.Operator):
-    "Remove the selected sound event from the object's sound events list."
-    bl_idname = "xpsound.remove_sound_event"
-    bl_label = "Remove Sound Event"
-    index: bpy.props.IntProperty()
+# Operator to remove the selected sound condition from the list
+class XP_SOUND_OT_SOUND_CONDITION_REMOVE(bpy.types.Operator):
+    "Remove the selected sound condition from the object's sound conditions list."
+    bl_idname = "xpsound.remove_sound_condition"
+    bl_label = "Remove Sound Condition"
+    index: bpy.props.IntProperty(default=-1)
     def execute(self, context):
         obj = context.active_object
         if obj.xp_sound_data.xp_sound_index >= 0:
-            xp_sound = obj.xp_sound_data.xp_sound_list[obj.xp_sound_data.xp_sound_index]        
+            xp_sound = obj.xp_sound_data.xp_sound_list[obj.xp_sound_data.xp_sound_index]
+            
+            # If default index is passed (-1), use the selected index
+            if self.index < 0:
+                self.index = xp_sound.event_index
+                
             xp_sound.event_list.remove(self.index)
-            xp_sound.event_index = 0
+            xp_sound.event_index = min(max(0, self.index - 1), len(xp_sound.event_list) - 1)
         return {"FINISHED"}
 
 # Operator to copy the selected sound
@@ -129,8 +134,34 @@ class XP_SOUND_OT_SOUND_DUPLICATE(bpy.types.Operator):
                 new_event = new_xp_sound.event_list.add()
                 new_event.event_type = event.event_type
                 new_event.dataref_name = event.dataref_name
-                new_event.comparison_Operator = event.comparison_operator
+                new_event.comparison_operator = event.comparison_operator
                 new_event.comparison_value = event.comparison_value
+        return {'FINISHED'}
+
+# Operator to move sound up
+class XP_SOUND_OT_SOUND_MOVE_UP(bpy.types.Operator):
+    bl_idname = "object.xp_sound_move_up"
+    bl_label = "Move Sound Up"
+    
+    def execute(self, context):
+        obj = context.object
+        index = obj.xp_sound_data.xp_sound_index
+        if index > 0:
+            obj.xp_sound_data.xp_sound_list.move(index, index - 1)
+            obj.xp_sound_data.xp_sound_index = index - 1
+        return {'FINISHED'}
+
+# Operator to move sound down
+class XP_SOUND_OT_SOUND_MOVE_DOWN(bpy.types.Operator):
+    bl_idname = "object.xp_sound_move_down"
+    bl_label = "Move Sound Down"
+    
+    def execute(self, context):
+        obj = context.object
+        index = obj.xp_sound_data.xp_sound_index
+        if index < len(obj.xp_sound_data.xp_sound_list) - 1:
+            obj.xp_sound_data.xp_sound_list.move(index, index + 1)
+            obj.xp_sound_data.xp_sound_index = index + 1
         return {'FINISHED'}
 
 
@@ -164,11 +195,11 @@ class XP_SOUND_OT_SNAPSHOT_REMOVE(bpy.types.Operator):
         obj.xp_sound_data.xp_snapshot_index = min(max(0, index - 1), len(xp_snapshot_list) - 1)
         return {'FINISHED'}    
     
-# Operator to add a new snapshot event
-class XP_SOUND_OT_SNAPSHOT_EVENT_ADD(bpy.types.Operator):
-    "Defines an Operator to add a new snapshot event."
-    bl_idname = "xpsound.add_snapshot_event"
-    bl_label = "Add Snapshot Event"
+# Operator to add a new snapshot condition
+class XP_SOUND_OT_SNAPSHOT_CONDITION_ADD(bpy.types.Operator):
+    "Defines an Operator to add a new snapshot condition."
+    bl_idname = "xpsound.add_snapshot_condition"
+    bl_label = "Add Snapshot Condition"
 
     def execute(self, context):
         obj = context.active_object
@@ -178,19 +209,260 @@ class XP_SOUND_OT_SNAPSHOT_EVENT_ADD(bpy.types.Operator):
             xp_snapshot.event_index = len(xp_snapshot.event_list) - 1
         return {"FINISHED"}        
 
-# Operator to remove the selected sound event from the list
-class XP_SOUND_OT_SNAPSHOT_EVENT_REMOVE(bpy.types.Operator):
-    "Remove the selected snapshot event from the object's sound events list."
-    bl_idname = "xpsound.remove_snapshot_event"
-    bl_label = "Remove Snapshot Event"
-    index: bpy.props.IntProperty()
+# Operator to remove the selected snapshot condition from the list
+class XP_SOUND_OT_SNAPSHOT_CONDITION_REMOVE(bpy.types.Operator):
+    "Remove the selected snapshot condition from the object's sound conditions list."
+    bl_idname = "xpsound.remove_snapshot_condition"
+    bl_label = "Remove Snapshot Condition"
+    index: bpy.props.IntProperty(default=-1)
     def execute(self, context):
         obj = context.active_object
         if obj.xp_sound_data.xp_snapshot_index >= 0:
             xp_snapshot = obj.xp_sound_data.xp_snapshot_list[obj.xp_sound_data.xp_snapshot_index]        
+            
+            # If default index is passed (-1), use the selected index
+            if self.index < 0:
+                self.index = xp_snapshot.event_index
+
             xp_snapshot.event_list.remove(self.index)
-            xp_snapshot.event_index = 0
+            xp_snapshot.event_index = min(max(0, self.index - 1), len(xp_snapshot.event_list) - 1)
         return {"FINISHED"}
+
+# Operator to move snapshot up
+class XP_SOUND_OT_SNAPSHOT_MOVE_UP(bpy.types.Operator):
+    bl_idname = "object.xp_snapshot_move_up"
+    bl_label = "Move Snapshot Up"
+    
+    def execute(self, context):
+        obj = context.object
+        index = obj.xp_sound_data.xp_snapshot_index
+        if index > 0:
+            obj.xp_sound_data.xp_snapshot_list.move(index, index - 1)
+            obj.xp_sound_data.xp_snapshot_index = index - 1
+        return {'FINISHED'}
+
+# Operator to move snapshot down
+class XP_SOUND_OT_SNAPSHOT_MOVE_DOWN(bpy.types.Operator):
+    bl_idname = "object.xp_snapshot_move_down"
+    bl_label = "Move Snapshot Down"
+    
+    def execute(self, context):
+        obj = context.object
+        index = obj.xp_sound_data.xp_snapshot_index
+        if index < len(obj.xp_sound_data.xp_snapshot_list) - 1:
+            obj.xp_sound_data.xp_snapshot_list.move(index, index + 1)
+            obj.xp_sound_data.xp_snapshot_index = index + 1
+        return {'FINISHED'}
+
+
+# SOUND CONDITION OPERATORS
+
+class XP_SOUND_OT_SOUND_CONDITION_MOVE_UP(bpy.types.Operator):
+    bl_idname = "xpsound.move_sound_condition_up"
+    bl_label = "Move Sound Condition Up"
+    
+    def execute(self, context):
+        obj = context.object
+        if obj.xp_sound_data.xp_sound_index >= 0:
+            xp_sound = obj.xp_sound_data.xp_sound_list[obj.xp_sound_data.xp_sound_index]
+            index = xp_sound.event_index
+            if index > 0:
+                xp_sound.event_list.move(index, index - 1)
+                xp_sound.event_index = index - 1
+        return {'FINISHED'}
+
+class XP_SOUND_OT_SOUND_CONDITION_MOVE_DOWN(bpy.types.Operator):
+    bl_idname = "xpsound.move_sound_condition_down"
+    bl_label = "Move Sound Condition Down"
+    
+    def execute(self, context):
+        obj = context.object
+        if obj.xp_sound_data.xp_sound_index >= 0:
+            xp_sound = obj.xp_sound_data.xp_sound_list[obj.xp_sound_data.xp_sound_index]
+            index = xp_sound.event_index
+            if index < len(xp_sound.event_list) - 1:
+                xp_sound.event_list.move(index, index + 1)
+                xp_sound.event_index = index + 1
+        return {'FINISHED'}
+
+class XP_SOUND_OT_SOUND_CONDITION_COPY(bpy.types.Operator):
+    bl_idname = "xpsound.copy_sound_condition"
+    bl_label = "Copy Sound Condition"
+
+    def execute(self, context):
+        obj = context.object
+        if obj.xp_sound_data.xp_sound_index >= 0:
+            xp_sound = obj.xp_sound_data.xp_sound_list[obj.xp_sound_data.xp_sound_index]
+            if xp_sound.event_index >= 0 and len(xp_sound.event_list) > 0:
+                event = xp_sound.event_list[xp_sound.event_index]
+                data = {
+                    'type': 'CONDITION',
+                    'event_type': event.event_type,
+                    'dataref_name': event.dataref_name,
+                    'comparison_operator': event.comparison_operator,
+                    'comparison_value': event.comparison_value
+                }
+                context.window_manager.clipboard = str(data)
+                self.report({'INFO'}, "Condition copied")
+        return {'FINISHED'}
+
+class XP_SOUND_OT_SOUND_CONDITION_PASTE(bpy.types.Operator):
+    bl_idname = "xpsound.paste_sound_condition"
+    bl_label = "Paste Sound Condition"
+
+    def execute(self, context):
+        obj = context.object
+        if obj.xp_sound_data.xp_sound_index >= 0:
+            xp_sound = obj.xp_sound_data.xp_sound_list[obj.xp_sound_data.xp_sound_index]
+            try:
+                data = eval(context.window_manager.clipboard)
+                if isinstance(data, dict) and data.get('type') == 'CONDITION':
+                    new_event = xp_sound.event_list.add()
+                    new_event.event_type = data['event_type']
+                    new_event.dataref_name = data['dataref_name']
+                    new_event.comparison_operator = data['comparison_operator']
+                    new_event.comparison_value = data['comparison_value']
+                    xp_sound.event_index = len(xp_sound.event_list) - 1
+                else:
+                    self.report({'WARNING'}, "Clipboard does not contain a valid condition")
+            except:
+                self.report({'WARNING'}, "Clipboard does not contain valid data")
+        return {'FINISHED'}
+
+
+# SNAPSHOT CONDITION OPERATORS
+
+class XP_SOUND_OT_SNAPSHOT_CONDITION_MOVE_UP(bpy.types.Operator):
+    bl_idname = "xpsound.move_snapshot_condition_up"
+    bl_label = "Move Snapshot Condition Up"
+    
+    def execute(self, context):
+        obj = context.object
+        if obj.xp_sound_data.xp_snapshot_index >= 0:
+            xp_snapshot = obj.xp_sound_data.xp_snapshot_list[obj.xp_sound_data.xp_snapshot_index]
+            index = xp_snapshot.event_index
+            if index > 0:
+                xp_snapshot.event_list.move(index, index - 1)
+                xp_snapshot.event_index = index - 1
+        return {'FINISHED'}
+
+class XP_SOUND_OT_SNAPSHOT_CONDITION_MOVE_DOWN(bpy.types.Operator):
+    bl_idname = "xpsound.move_snapshot_condition_down"
+    bl_label = "Move Snapshot Condition Down"
+    
+    def execute(self, context):
+        obj = context.object
+        if obj.xp_sound_data.xp_snapshot_index >= 0:
+            xp_snapshot = obj.xp_sound_data.xp_snapshot_list[obj.xp_sound_data.xp_snapshot_index]
+            index = xp_snapshot.event_index
+            if index < len(xp_snapshot.event_list) - 1:
+                xp_snapshot.event_list.move(index, index + 1)
+                xp_snapshot.event_index = index + 1
+        return {'FINISHED'}
+
+class XP_SOUND_OT_SNAPSHOT_CONDITION_COPY(bpy.types.Operator):
+    bl_idname = "xpsound.copy_snapshot_condition"
+    bl_label = "Copy Snapshot Condition"
+
+    def execute(self, context):
+        obj = context.object
+        if obj.xp_sound_data.xp_snapshot_index >= 0:
+            xp_snapshot = obj.xp_sound_data.xp_snapshot_list[obj.xp_sound_data.xp_snapshot_index]
+            if xp_snapshot.event_index >= 0 and len(xp_snapshot.event_list) > 0:
+                event = xp_snapshot.event_list[xp_snapshot.event_index]
+                data = {
+                    'type': 'CONDITION',
+                    'event_type': event.event_type,
+                    'dataref_name': event.dataref_name,
+                    'comparison_operator': event.comparison_operator,
+                    'comparison_value': event.comparison_value
+                }
+                context.window_manager.clipboard = str(data)
+                self.report({'INFO'}, "Condition copied")
+        return {'FINISHED'}
+
+class XP_SOUND_OT_SNAPSHOT_CONDITION_PASTE(bpy.types.Operator):
+    bl_idname = "xpsound.paste_snapshot_condition"
+    bl_label = "Paste Snapshot Condition"
+
+    def execute(self, context):
+        obj = context.object
+        if obj.xp_sound_data.xp_snapshot_index >= 0:
+            xp_snapshot = obj.xp_sound_data.xp_snapshot_list[obj.xp_sound_data.xp_snapshot_index]
+            try:
+                data = eval(context.window_manager.clipboard)
+                if isinstance(data, dict) and data.get('type') == 'CONDITION':
+                    new_event = xp_snapshot.event_list.add()
+                    new_event.event_type = data['event_type']
+                    new_event.dataref_name = data['dataref_name']
+                    new_event.comparison_operator = data['comparison_operator']
+                    new_event.comparison_value = data['comparison_value']
+                    xp_snapshot.event_index = len(xp_snapshot.event_list) - 1
+                else:
+                    self.report({'WARNING'}, "Clipboard does not contain a valid condition")
+            except:
+                self.report({'WARNING'}, "Clipboard does not contain valid data")
+        return {'FINISHED'}
+
+# Copy FMOD build files to root directory
+class XP_SOUND_OT_COPY_FMOD_BUILD_FILES(bpy.types.Operator):
+    "Copies GUIDs.txt and Master Bank.bank from build folders to FMOD root directory"
+    bl_idname = "xpsound.copy_fmod_build_files"
+    bl_label = "Copy Build Files"
+
+    def execute(self, context):
+        import shutil
+        
+        fmod_path = context.scene.xp_sound_global.fmod_path
+        if not fmod_path:
+            self.report({'ERROR'}, "FMOD directory not set")
+            return {'CANCELLED'}
+        
+        # Construct absolute paths
+        fmod_root = bpy.path.abspath(os.path.join("//", fmod_path))
+        fmod_root = os.path.normpath(fmod_root)
+        
+        # Source files
+        guids_source = os.path.join(fmod_root, "Build", "GUIDs.txt")
+        bank_source = os.path.join(fmod_root, "Build", "Desktop", "Master Bank.bank")
+        
+        # Destination files
+        guids_dest = os.path.join(fmod_root, "GUIDs.txt")
+        bank_dest = os.path.join(fmod_root, "Master Bank.bank")
+        
+        copied_files = []
+        
+        # Copy GUIDs.txt
+        if os.path.exists(guids_source):
+            try:
+                shutil.copy2(guids_source, guids_dest)
+                copied_files.append("GUIDs.txt")
+            except Exception as e:
+                self.report({'ERROR'}, f"Failed to copy GUIDs.txt: {e}")
+                return {'CANCELLED'}
+        else:
+            self.report({'WARNING'}, f"GUIDs.txt not found at: {guids_source}")
+        
+        # Copy Master Bank.bank
+        if os.path.exists(bank_source):
+            try:
+                shutil.copy2(bank_source, bank_dest)
+                copied_files.append("Master Bank.bank")
+            except Exception as e:
+                self.report({'ERROR'}, f"Failed to copy Master Bank.bank: {e}")
+                return {'CANCELLED'}
+        else:
+            self.report({'WARNING'}, f"Master Bank.bank not found at: {bank_source}")
+        
+        if copied_files:
+            self.report({'INFO'}, f"Copied: {', '.join(copied_files)}")
+            # Refresh parsed events after copying GUIDs.txt
+            if "GUIDs.txt" in copied_files:
+                bpy.ops.object.xp_sound_refresh_parsed_events()
+        else:
+            self.report({'WARNING'}, "No files were copied")
+        
+        return {'FINISHED'}
 
 # Refresh the list of events from GUIDs file    
 class XP_SOUND_refresh_parsed_events(bpy.types.Operator):
@@ -239,18 +511,34 @@ class XP_SOUND_refresh_parsed_events(bpy.types.Operator):
 classes = (
     XP_SOUND_OT_SOUND_ADD,
     XP_SOUND_OT_SOUND_REMOVE,
-    XP_SOUND_OT_SOUND_EVENT_ADD,
-    XP_SOUND_OT_SOUND_EVENT_REMOVE,
+    XP_SOUND_OT_SOUND_CONDITION_ADD,
+    XP_SOUND_OT_SOUND_CONDITION_REMOVE,
     XP_SOUND_OT_SOUND_COPY,
     XP_SOUND_OT_SOUND_PASTE,
     XP_SOUND_OT_SOUND_DUPLICATE,
 
     XP_SOUND_OT_SNAPSHOT_ADD,
     XP_SOUND_OT_SNAPSHOT_REMOVE,
-    XP_SOUND_OT_SNAPSHOT_EVENT_ADD,
-    XP_SOUND_OT_SNAPSHOT_EVENT_REMOVE,
+    XP_SOUND_OT_SNAPSHOT_CONDITION_ADD,
+    XP_SOUND_OT_SNAPSHOT_CONDITION_REMOVE,
+    
+    XP_SOUND_OT_SOUND_MOVE_UP,
+    XP_SOUND_OT_SOUND_MOVE_DOWN,
+    XP_SOUND_OT_SNAPSHOT_MOVE_UP,
+    XP_SOUND_OT_SNAPSHOT_MOVE_DOWN,
 
-    XP_SOUND_refresh_parsed_events
+    XP_SOUND_OT_COPY_FMOD_BUILD_FILES,
+    XP_SOUND_refresh_parsed_events,
+    
+    XP_SOUND_OT_SOUND_CONDITION_MOVE_UP,
+    XP_SOUND_OT_SOUND_CONDITION_MOVE_DOWN,
+    XP_SOUND_OT_SOUND_CONDITION_COPY,
+    XP_SOUND_OT_SOUND_CONDITION_PASTE,
+    
+    XP_SOUND_OT_SNAPSHOT_CONDITION_MOVE_UP,
+    XP_SOUND_OT_SNAPSHOT_CONDITION_MOVE_DOWN,
+    XP_SOUND_OT_SNAPSHOT_CONDITION_COPY,
+    XP_SOUND_OT_SNAPSHOT_CONDITION_PASTE
 )
 
 def register():

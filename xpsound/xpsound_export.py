@@ -6,7 +6,7 @@ from xpsound import bl_info
 
 # Define the export function for .snd file
 def export_snapshot_attachment(f, collection, obj, snapshot):
-    "Writes sound event data to a .snd file for sound type events."
+    "Writes snapshot condition data to a .snd file for snapshot type attachments."
 
     f.write(f"# {collection.name + ' -> ' if collection != bpy.context.scene.collection else ''}{obj.name} -> {snapshot.name}\n")
     f.write("BEGIN_SOUND_ATTACHMENT\n")
@@ -16,17 +16,17 @@ def export_snapshot_attachment(f, collection, obj, snapshot):
     # Write param dataref index
     f.write(f"\tPARAM_DREF_IDX {snapshot.event_param_idx}\n")
 
-    # Write sound events
-    for snapshot_event in snapshot.event_list:
-        comparison_value = round(snapshot_event.comparison_value, 4)
-        if snapshot_event.event_type == "START":
-            f.write(f"\tEVENT_START_COND {snapshot_event.dataref_name} {snapshot_event.comparison_operator} {comparison_value}\n")
-        elif snapshot_event.event_type == "END":
-            f.write(f"\tEVENT_END_COND {snapshot_event.dataref_name} {snapshot_event.comparison_operator} {comparison_value}\n")
-        elif snapshot_event.event_type == "ALWAYS":
-            f.write(f"\tEVENT_ALWAYS {snapshot_event.dataref_name}\n")
-        elif snapshot_event.event_type.startswith("CMND"):
-            f.write(f"\tEVENT_COMMAND {snapshot_event.event_type}\n")
+    # Write sound conditions
+    for snapshot_condition in snapshot.event_list:
+        comparison_value = round(snapshot_condition.comparison_value, 4)
+        if snapshot_condition.event_type == "START":
+            f.write(f"\tEVENT_START_COND {snapshot_condition.dataref_name} {snapshot_condition.comparison_operator} {comparison_value}\n")
+        elif snapshot_condition.event_type == "END":
+            f.write(f"\tEVENT_END_COND {snapshot_condition.dataref_name} {snapshot_condition.comparison_operator} {comparison_value}\n")
+        elif snapshot_condition.event_type == "ALWAYS":
+            f.write(f"\tEVENT_ALWAYS {snapshot_condition.dataref_name}\n")
+        elif snapshot_condition.event_type.startswith("CMND"):
+            f.write(f"\tEVENT_COMMAND {snapshot_condition.event_type}\n")
 
     # Write If event auto end from start condition
     if snapshot.event_auto_end_from_start_cond == True:
@@ -37,7 +37,7 @@ def export_snapshot_attachment(f, collection, obj, snapshot):
     
 # Define the export function for .snd file
 def export_sound_attachment(f, collection, obj, sound):
-    "Writes sound event data to a .snd file for sound type events."
+    "Writes sound condition data to a .snd file for sound type attachments."
     
     f.write(f"# {collection.name + ' -> ' if collection != bpy.context.scene.collection else ''}{obj.name} -> {sound.name}\n")
     f.write("BEGIN_SOUND_ATTACHMENT\n")
@@ -76,17 +76,17 @@ def export_sound_attachment(f, collection, obj, sound):
     if sound.event_allowed_for_ai:
         f.write(f"\tEVENT_ALLOWED_FOR_AI\n")
 
-    # Write sound events
-    for sound_event in sound.event_list:
-        comparison_value = round(sound_event.comparison_value, 4)
-        if sound_event.event_type == "START":
-            f.write(f"\tEVENT_START_COND {sound_event.dataref_name} {sound_event.comparison_operator} {comparison_value}\n")
-        elif sound_event.event_type == "END":
-            f.write(f"\tEVENT_END_COND {sound_event.dataref_name} {sound_event.comparison_operator} {comparison_value}\n")
-        elif sound_event.event_type == "ALWAYS":
-            f.write(f"\tEVENT_ALWAYS {sound_event.dataref_name}\n")
-        elif sound_event.event_type.startswith("CMND"):
-            f.write(f"\tEVENT_COMMAND {sound_event.event_type}\n")
+    # Write sound conditions
+    for sound_condition in sound.event_list:
+        comparison_value = round(sound_condition.comparison_value, 4)
+        if sound_condition.event_type == "START":
+            f.write(f"\tEVENT_START_COND {sound_condition.dataref_name} {sound_condition.comparison_operator} {comparison_value}\n")
+        elif sound_condition.event_type == "END":
+            f.write(f"\tEVENT_END_COND {sound_condition.dataref_name} {sound_condition.comparison_operator} {comparison_value}\n")
+        elif sound_condition.event_type == "ALWAYS":
+            f.write(f"\tEVENT_ALWAYS {sound_condition.dataref_name}\n")
+        elif sound_condition.event_type.startswith("CMND"):
+            f.write(f"\tEVENT_COMMAND {sound_condition.event_type}\n")
 
     # Write If event auto end from start condition
     if sound.event_auto_end_from_start_cond == True:
@@ -97,7 +97,7 @@ def export_sound_attachment(f, collection, obj, sound):
 
 
 def export_sound_space(f, collection, obj):
-    "Writes sound event data to a .snd file for space type events."
+    "Writes sound space data to a .snd file for space type objects."
 
     f.write(f"# {collection.name + ' -> ' if collection != bpy.context.scene.collection else ''}{obj.name}\n")
     f.write("BEGIN_SOUND_SPACE\n")
@@ -127,7 +127,7 @@ def export_sound_space(f, collection, obj):
 
 # Define the export operator to write sound event data to a .snd file
 class XPSOUND_export_snd(bpy.types.Operator):
-    "Export sound events to a .snd file."
+    "Export sound conditions to a .snd file."
 
     bl_idname = "xpsound.export_snd"
     bl_label = "Export to .snd"
@@ -181,11 +181,11 @@ class XPSOUND_export_snd(bpy.types.Operator):
             plugin_version = bl_info["version"]
             f.write(f"### Generated by {plugin_name} -> Version:{plugin_version}\n\n")
             
-        self.report({"INFO"}, f"Exported sound events to {snd_file_path}")
+        self.report({"INFO"}, f"Exported sound conditions to {snd_file_path}")
         return {"FINISHED"}
 
     def process_collections(self, soundsIO, snapshotsIO, spacesIO, collection):
-        "Recursively processes collections to find and export sound events."
+        "Recursively processes collections to find and export sound conditions."
         
         # Check if the collection is hidden
         if (collection.hide_viewport):
