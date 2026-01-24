@@ -15,9 +15,10 @@ jobs:
       
       - name: Create ZIP archive
         run: |
-          cd xpsound
+          mkdir -p release
+          cp -r xpsound release/
+          cd release
           zip -r ../XPSound-${{ github.ref_name }}.zip xpsound/
-          cd ..
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
