@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Dreamfoil Utils: XPSound",
     "author": "Alfredo Fernandes",
-    "version": (0, 9, 0),
+    "version": (0, 9, 5),
     "blender": (2, 80, 0),
     "location": "Properties > Data",
     "description": "Addon for X-Plane .snd file creation",
